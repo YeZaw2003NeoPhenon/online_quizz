@@ -30,9 +30,9 @@ This project lubriciously demonstrates the use of **JPA**, **Spring Data**, and 
 > [!NOTE]
 > ```
 >spring.datasource.url=jdbc:mysql://localhost:3306/quiz_db
-spring.datasource.username=root
-spring.datasource.password=yourpassword
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=true
+>spring.datasource.username=root
+>spring.datasource.password=yourpassword
+>spring.jpa.hibernate.ddl-auto=update
+>spring.jpa.show-sql=true
 > ```
   
