@@ -12,6 +12,11 @@ public class FeedbackMessage {
 	public static final String unavaliableMessage = "No questions available for the given subject!";
 	
 	public static final String confirmed_message = "Questions fetched successfully";
-	
+
+
+	public static final String found_message = "Question is found successfully!";
+
+	public static final String empty_subjects_message = "No subjects available!";
+	public static final String fetched_subjects_success_message = "Subjects fetched successfully";
 
 }

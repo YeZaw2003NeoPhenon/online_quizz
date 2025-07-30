@@ -45,15 +45,15 @@ public class QuestionRepositoryTest {
 	@DisplayName("Should find all questions based on subjects and questions")
 	void testTwo() {
 		
-		    Pageable pageable = PageRequest.of(0, 3);
+		 Pageable pageable = PageRequest.of(0, 3);
 		
-	        Page<Question> page = questionRepository.findAllBySubjectAndQuestionContaining("Math", "3", pageable);
+	      Page<Question> page = questionRepository.findAllBySubjectAndQuestionContaining("Math", "What is 2+2?", pageable);
 
-	        assertThat(page).isNotEmpty();
+	      assertThat(page).isNotEmpty();
 
-	        assertThat(page.getContent()).hasSize(1);
+	      assertThat(page.getContent()).hasSize(1);
 
-	        // make sure questions we extract are matched up with filtered critera
+		  // make sure questions we extract are matched up with filtered critera
 	        Question question = page.getContent().get(0);
 	        assertThat(question.getSubject()).isEqualTo("Math");
 	        assertThat(question.getQuestion()).contains("3");

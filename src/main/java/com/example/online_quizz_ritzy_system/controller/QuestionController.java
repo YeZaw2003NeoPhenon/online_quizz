@@ -3,6 +3,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.example.online_quizz_ritzy_system.dto.QuestionRequest;
+import com.example.online_quizz_ritzy_system.dto.QuestionResponse;
+import com.example.online_quizz_ritzy_system.response.ResponseAPI;
+import com.example.online_quizz_ritzy_system.service.QuestionService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,132 +19,188 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.online_quizz_ritzy_system.dto.EntityConverter;
 import com.example.online_quizz_ritzy_system.dto.QuestionDto;
-import com.example.online_quizz_ritzy_system.entity.Question;
 import com.example.online_quizz_ritzy_system.response.FeedbackMessage;
-import com.example.online_quizz_ritzy_system.response.ResponseApi;
 import com.example.online_quizz_ritzy_system.service.QuestionServiceImp;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/questions")
-@RequiredArgsConstructor
+@Slf4j
 public class QuestionController {
-	
-	private final QuestionServiceImp questionServiceImp;
-	
-	private final EntityConverter<Question , QuestionDto> entityConverter;
-	
+
+	private final QuestionService questionService;
+
+    @Autowired
+    public QuestionController(QuestionServiceImp questionServiceImp) {
+        this.questionService = questionServiceImp;
+    }
+
     @RequestMapping(value = "/create-new-question",method = RequestMethod.POST)
-	public ResponseEntity<ResponseApi<QuestionDto>> createQuestion(@Valid @RequestBody Question question){
-		
-		Question createdQuestion = questionServiceImp.createQuestion(question);
-		
-		QuestionDto questionDto = entityConverter.entityToDto(createdQuestion, QuestionDto.class);
-		
-		return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseApi<QuestionDto>(HttpStatus.OK, FeedbackMessage.question_creation_success_message, questionDto));
-	
+    public ResponseEntity<ResponseAPI<QuestionResponse>> createQuestion(@Valid @RequestBody QuestionRequest request) {
+
+		QuestionResponse createdQuestion = questionService.createQuestion(request);
+
+         return ResponseEntity.status(HttpStatus.CREATED).body(
+                ResponseAPI.<QuestionResponse>builder()
+                        .statusCode(HttpStatus.CREATED.value())
+                        .message(FeedbackMessage.question_creation_success_message)
+                        .data(createdQuestion)
+                        .build()
+        );
+
    }
 	
     @RequestMapping(value = "/all-questions",method = RequestMethod.GET)
-    public ResponseEntity<ResponseApi<List<Question>>> getAllQuestions(){
+    public ResponseEntity<ResponseAPI<List<QuestionDto>>> getAllQuestions(){
     	
-        List<Question> questions = questionServiceImp.getAllQuestions();
-        
+        List<QuestionDto> questions = questionService.getAllQuestions();
+
 		  if (questions.isEmpty()) {
 		        return ResponseEntity.status(HttpStatus.NO_CONTENT)
-		                .body(new ResponseApi<>(HttpStatus.NO_CONTENT, "No questions found", null));
+		                .body(
+                                ResponseAPI.<List<QuestionDto>>builder()
+                                        .statusCode(HttpStatus.NO_CONTENT.value())
+                                        .message("No questions found")
+                                        .data(null).build());
 		    }
 		  
 		    return ResponseEntity.status(HttpStatus.OK)
-		            .body(new ResponseApi<>(HttpStatus.OK, FeedbackMessage.Questions, questions));	
+		            .body(
+                            ResponseAPI.<List<QuestionDto>>builder()
+                                    .statusCode(HttpStatus.OK.value())
+                                    .message(FeedbackMessage.Questions)
+                                    .data(questions).build());
+    }
+
+    @RequestMapping(value = "/{id}",method = RequestMethod.GET)
+    public ResponseEntity<ResponseAPI<QuestionDto>> getQuestionById(@PathVariable Long id){
+        QuestionDto questionDto = questionService.findQuestionById(id);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(
+                        ResponseAPI.<QuestionDto>builder()
+                                .statusCode(HttpStatus.OK.value())
+                                .message(FeedbackMessage.found_message)
+                                .data(questionDto).build());
     }
     
-    @RequestMapping(value = "/question/{id}",method = RequestMethod.GET)
-    public ResponseEntity<QuestionDto> getQuestionById(@PathVariable Long id){
-        Question theQuestion = questionServiceImp.findQuestionById(id);
-        
-        QuestionDto questionDto = entityConverter.entityToDto(theQuestion, QuestionDto.class);
-        
-        return ResponseEntity.ok(questionDto);
-    }
-    
-    @RequestMapping(value = "/question/{id}/update",method = RequestMethod.PUT)
-    public ResponseEntity<ResponseApi<QuestionDto>> updateQuestion(
-            @PathVariable Long id, @RequestBody Question question) {
+    @RequestMapping(value = "/update/{id}",method = RequestMethod.PUT)
+    public ResponseEntity<ResponseAPI<QuestionResponse>> updateQuestion(
+            @PathVariable Long id, @RequestBody QuestionRequest question) {
     	
-        Question theQuestion = questionServiceImp.updateQuestion(id, question);
-        
-        QuestionDto updatedQuestion = entityConverter.entityToDto(theQuestion, QuestionDto.class);
-        
-	    return ResponseEntity.status(HttpStatus.OK)
-	            .body(new ResponseApi<>(HttpStatus.OK, FeedbackMessage.question_update_success_message, updatedQuestion));	
+        QuestionResponse updatedQuestion = questionService.updateQuestion(id, question);
+
+	    return ResponseEntity.status(HttpStatus.CREATED)
+	            .body(
+                        ResponseAPI.<QuestionResponse>builder()
+                                .statusCode(HttpStatus.CREATED.value())
+                                .message(FeedbackMessage.question_update_success_message)
+                                .data(updatedQuestion).build()
+                        );
     }
-    
-   
-    @RequestMapping(value = "/question/{id}/delete", method = RequestMethod.DELETE)
-    public ResponseEntity<ResponseApi<QuestionDto>> deleteQuestion(@PathVariable Long id){
-        questionServiceImp.deleteQuestion(id);
-		 return ResponseEntity.status(HttpStatus.ACCEPTED).body(new ResponseApi<QuestionDto>(HttpStatus.OK, FeedbackMessage.question_deletion_success_message , null));
+
+    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    public ResponseEntity<ResponseAPI<Void>> deleteQuestion(@PathVariable Long id){
+        questionService.deleteQuestion(id);
+
+		 return ResponseEntity.status(HttpStatus.OK).body(
+                 ResponseAPI.<Void>builder()
+                         .statusCode(HttpStatus.CREATED.value())
+                         .message(FeedbackMessage.question_deletion_success_message)
+                         .data(null).build()
+                 );
     }
-    
+
     @RequestMapping(value = "/subjects", method = RequestMethod.GET)
-    public ResponseEntity<ResponseApi<List<String>>> getAllSubjects() {
-        List<String> subjects = questionServiceImp.getAllSubjects();
+    public ResponseEntity<ResponseAPI<List<String>>> getAllSubjects() {
+        List<String> subjects = questionService.getAllSubjects();
         
         if (subjects.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT)
-                    .body(new ResponseApi<>(HttpStatus.NO_CONTENT, "No subjects found", null));
+                    .body(
+                            ResponseAPI.<List<String>>builder()
+                                    .statusCode(HttpStatus.NO_CONTENT.value())
+                                    .message(FeedbackMessage.empty_subjects_message)
+                                    .data(null).build()
+                    );
         }
-        
-        return ResponseEntity.ok(new ResponseApi<>(HttpStatus.OK, "Subjects fetched successfully", subjects));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(
+                        ResponseAPI.<List<String>>builder()
+                                .statusCode(HttpStatus.OK.value())
+                                .message(FeedbackMessage.fetched_subjects_success_message)
+                                .data(subjects).build()
+                );
     }
     
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<ResponseApi<Page<Question>>> getQuestions(
+    public ResponseEntity<ResponseAPI<Page<QuestionDto>>> getQuestions(
     													@RequestParam(value = "subject" , required = false) String subject,
     													@RequestParam(value = "question" , required = false) String question,
     													@RequestParam(value = "page" , defaultValue = "0")int page,
     													@RequestParam(value = "size" , defaultValue = "10")int size,
-    													@RequestParam(value = "sortBy" , defaultValue = "createdAt") String sortBy,
+    													@RequestParam(value = "sortBy" , defaultValue = "createdAt")String sortBy,
     													@RequestParam(value = "sortDirection" , defaultValue = "asc")String sortDirection){
     	
-    	Page<Question> questionsPage = questionServiceImp.getQuestions(subject, question, page, size, sortBy, sortDirection);
+    	Page<QuestionDto> questionsPage = questionService.getQuestions(subject, question, page, size, sortBy, sortDirection);
     	
-		 if( questionsPage.getContent().isEmpty()) {
-			 return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new ResponseApi<Page<Question>>(HttpStatus.NO_CONTENT,"No questions found", null));
+		 if(questionsPage.getContent().isEmpty()) {
+			 return ResponseEntity.status(HttpStatus.NO_CONTENT).body(
+                    ResponseAPI.<Page<QuestionDto>>builder()
+                     .statusCode(HttpStatus.OK.value())
+                     .message("No questions found")
+                     .build()
+             );
 		 }
 		    return ResponseEntity.status(HttpStatus.OK)
-		            .body(new ResponseApi<>(HttpStatus.OK, FeedbackMessage.Questions, questionsPage));	 
+		            .body(
+                            ResponseAPI.<Page<QuestionDto>>builder()
+                                    .statusCode(HttpStatus.OK.value())
+                                    .message(FeedbackMessage.Questions)
+                                    .data(questionsPage)
+                                    .build()
+                    );
     }
     
     
     @RequestMapping(value = "/quiz/fetch-questions-for-user",method = RequestMethod.GET)
-    public ResponseEntity<ResponseApi<List<Question>>> getQuestionForUser(
-    		@RequestParam Integer numsOfQuestions , @RequestParam String subject
+    public ResponseEntity<ResponseAPI<List<QuestionDto>>> getQuestionForUser(
+    		@RequestParam(name = "num_of_qs") Integer numOfQuestions , @RequestParam String subject
     		){
+
     	// render out all questions based on subject
-     List<Question> allQuestions = questionServiceImp.getQuestionForUser(numsOfQuestions, subject);
+     List<QuestionDto> allQuestions = questionService.getQuestionForUser(numOfQuestions, subject);
      
      // Handle case when there are no questions available for the given subject
      if (allQuestions.isEmpty()) {
          return ResponseEntity.status(HttpStatus.NO_CONTENT)
-                 .body(new ResponseApi<>(HttpStatus.NO_CONTENT, FeedbackMessage.unavaliableMessage, null));
+                 .body(
+                         ResponseAPI.<List<QuestionDto>>builder()
+                                 .statusCode(HttpStatus.NO_CONTENT.value())
+                                 .message(FeedbackMessage.unavaliableMessage)
+                                 .data(List.of())
+                                 .build()
+                 );
      }
      
-     List<Question> mullableQuestions = new ArrayList<>(allQuestions);
+     List<QuestionDto> muttableQuestions = new ArrayList<>(allQuestions);
      
      // shuffle off the list of questions for random purpose
-     Collections.shuffle(mullableQuestions);
+     Collections.shuffle(muttableQuestions);
      
-     int avaliableQuestions = Math.min(numsOfQuestions, mullableQuestions.size());
+     int availableQuestions = Math.min(numOfQuestions, muttableQuestions.size());
      
-     List<Question> randomQuestions = mullableQuestions.subList(0, avaliableQuestions);
-     
-     return ResponseEntity.ok(new ResponseApi<>(HttpStatus.OK, FeedbackMessage.confirmed_message, randomQuestions));   
-     
+     List<QuestionDto> randomQuestions = muttableQuestions.subList(0, availableQuestions);
+
+     return ResponseEntity.status(HttpStatus.OK)
+             .body(
+                     ResponseAPI.<List<QuestionDto>>builder()
+                             .statusCode(HttpStatus.OK.value())
+                             .message(FeedbackMessage.confirmed_message)
+                             .data(randomQuestions)
+                             .build()
+             );
     }
-    
+
 }

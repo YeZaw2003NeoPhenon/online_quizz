@@ -2,27 +2,30 @@ package com.example.online_quizz_ritzy_system.service;
 
 import java.util.List;
 
+import com.example.online_quizz_ritzy_system.dto.QuestionDto;
+import com.example.online_quizz_ritzy_system.dto.QuestionRequest;
+import com.example.online_quizz_ritzy_system.dto.QuestionResponse;
 import org.springframework.data.domain.Page;
 
 import com.example.online_quizz_ritzy_system.entity.Question;
 
 
 public interface QuestionService {
+
+	QuestionResponse createQuestion(QuestionRequest question);
 	
-	public abstract Question createQuestion(Question question);
+	 List<QuestionDto> getAllQuestions();
 	
-	public abstract List<Question> getAllQuestions();
+	 QuestionDto findQuestionById(Long id);
 	
-	public abstract Question findQuestionById(Long id);
+	 List<String> getAllSubjects();
 	
-	public abstract List<String> getAllSubjects();
+	 void deleteQuestion(Long id);
+
+	QuestionResponse updateQuestion(Long id , QuestionRequest question);
 	
-	public abstract void deleteQuestion(Long id);
-	
-	public abstract Question updateQuestion(Long id , Question question);
-	
-	public abstract List<Question> getQuestionForUser(Integer numsOfQuestions , String subject);
-	
-	public abstract Page<Question> getQuestions(String subject , String question, int page , int size , String sortBy , String sortDirection);
+	 List<QuestionDto> getQuestionForUser(Integer numsOfQuestions , String subject);
+
+	 Page<QuestionDto> getQuestions(String subject , String question, int page , int size , String sortBy , String sortDirection);
 
 }

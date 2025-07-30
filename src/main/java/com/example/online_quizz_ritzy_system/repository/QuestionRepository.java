@@ -23,8 +23,8 @@ public interface QuestionRepository extends JpaRepository<Question, Long>{
 	 
 	 Page<Question>findAllBySubjectAndQuestionContaining(String subject , String question , Pageable pageable);
 	 
-	 Page<Question>findBySubject(String subject, Pageable pageable);
+	 Page<Question>findAllBySubject(String subject, Pageable pageable);
 	 
-	 Page<Question>findAllByQuestionContaining(String question , Pageable pageable);
+	 Page<Question>findAllByQuestion(String question , Pageable pageable);
 	 
 }
