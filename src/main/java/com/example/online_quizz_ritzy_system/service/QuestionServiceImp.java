@@ -39,16 +39,16 @@ public class QuestionServiceImp implements QuestionService{
         this.entityConverterResponse = entityConverterResponse;
     }
 
+
     @Override
 	public QuestionResponse createQuestion(QuestionRequest request) {
 
-		if( request != null && questionRepository.existsByQuestionAndSubject(request.getQuestion() ,request.getSubject())) {
-	        throw new QuestionAlreadyExistsException("A question with the same content already exists for this subject." + request.getSubject());
-		}
 		Question question = entityConverter.dtoToEntity(request, Question.class);
 
+		if(questionRepository.existsByQuestionAndSubject(question.getQuestion() , question.getSubject())) {
+	        throw new QuestionAlreadyExistsException("A question with the same content already exists for this subject." + request.getSubject());
+		}
 		Question savedQuestion = questionRepository.save(question);
-
 		return entityConverterResponse.entityToDto(savedQuestion, QuestionResponse.class);
 	}
 
@@ -110,7 +110,7 @@ public class QuestionServiceImp implements QuestionService{
 	public void deleteQuestion(Long id) {
 	
 		questionRepository.findById(id).ifPresentOrElse(questionRepository::delete , () -> {
-			new QuestionNotFoundException("Question with ID " + id + " not ubiquitously traceable to delete");
+            throw new QuestionNotFoundException("Question with given ID :" + id + " is not found");
 		});
 	}
 
