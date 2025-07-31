@@ -6,8 +6,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class OnlineQuizzRitzySystemApplication {
 
-	public static void main(String[] args) {
-	SpringApplication.run(OnlineQuizzRitzySystemApplication.class, args);
-
+ public static void main(String[] args) {
+ 	SpringApplication.run(OnlineQuizzRitzySystemApplication.class, args);
 	}
+
 }

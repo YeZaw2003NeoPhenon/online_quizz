@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.online_quizz_ritzy_system.dto.QuestionDto;
 import com.example.online_quizz_ritzy_system.response.FeedbackMessage;
-import com.example.online_quizz_ritzy_system.service.QuestionServiceImp;
 import jakarta.validation.Valid;
 
 @RestController
@@ -32,8 +31,8 @@ public class QuestionController {
 	private final QuestionService questionService;
 
     @Autowired
-    public QuestionController(QuestionServiceImp questionServiceImp) {
-        this.questionService = questionServiceImp;
+    public QuestionController(QuestionService questionService) {
+        this.questionService = questionService;
     }
 
     @RequestMapping(value = "/create-new-question",method = RequestMethod.POST)

@@ -3,7 +3,6 @@ package com.example.online_quizz_ritzy_system.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -19,8 +18,7 @@ import com.example.online_quizz_ritzy_system.entity.Question;
 
 @DataJpaTest
 public class QuestionRepositoryTest {
-	
-	
+
 	@Autowired
 	private QuestionRepository questionRepository;
 	
@@ -34,35 +32,70 @@ public class QuestionRepositoryTest {
      }
 	
 	@Test
-	@DisplayName("Should Contains Specific subjects")
+	@DisplayName("Should contains specific subjects")
 	void testOne() {
 	List<String> distinctSubjects  = questionRepository.findDistinctSubject();
 	assertThat(distinctSubjects).as("it can't be empty").isNotEmpty();
 	assertThat(distinctSubjects).containsExactlyInAnyOrder("Math","Geography","Science");
 	}
-	
+
 	@Test
-	@DisplayName("Should find all questions based on subjects and questions")
+	@DisplayName("Should return all questions by subject")
 	void testTwo() {
+		  Pageable pageable = PageRequest.of(0, 3);
 		
-		 Pageable pageable = PageRequest.of(0, 3);
-		
-	      Page<Question> page = questionRepository.findAllBySubjectAndQuestionContaining("Math", "What is 2+2?", pageable);
+	      Page<Question> subPage = questionRepository.findAllBySubject("Math", pageable);
 
-	      assertThat(page).isNotEmpty();
+	      assertThat(subPage).isNotEmpty();
 
-	      assertThat(page.getContent()).hasSize(1);
+	      assertThat(subPage.getContent()).hasSize(2);
 
-		  // make sure questions we extract are matched up with filtered critera
-	        Question question = page.getContent().get(0);
+		  // make sure questions we extract are matched up with filtered criteria
+	        Question question = subPage.getContent().get(0);
+			Question question1 = subPage.getContent().get(1);
 	        assertThat(question.getSubject()).isEqualTo("Math");
-	        assertThat(question.getQuestion()).contains("3");
-	    
+	        assertThat(question.getQuestion()).contains("2+2");
+			assertThat(question1.getQuestion()).contains("3+5");
 	}
-	
+
+	@Test
+	@DisplayName("Should return all questions by question")
+	void testThree(){
+		Pageable pageable = PageRequest.of(0, 2);
+
+		Page<Question> subjsQsPage = questionRepository.findAllByQuestion("What is H2O?", pageable);
+
+		assertThat(subjsQsPage).isNotEmpty();
+
+		assertThat(subjsQsPage.getContent()).hasSize(1);
+
+		// make sure questions we extract are matched up with filtered critera
+		Question question = subjsQsPage.getContent().get(0);
+		assertThat(question.getSubject()).isEqualTo("Science");
+		assertThat(question.getQuestion()).contains("H2O");
+		assertThat(question.getQuestionType()).isEqualTo("Multiple Choice");
+	}
+
+	@Test
+	@DisplayName("Should return all questions by subjects")
+	void testFour(){
+		Pageable pageable = PageRequest.of(0, 3);
+
+		Page<Question> subjsQsPage = questionRepository.findAllBySubjectAndQuestionContaining("Math", "What is 2+2?", pageable);
+
+		assertThat(subjsQsPage).isNotEmpty();
+
+		assertThat(subjsQsPage.getContent()).hasSize(1);
+
+		// make sure questions we extract are matched up with filtered critera
+		Question question = subjsQsPage.getContent().get(0);
+		assertThat(question.getSubject()).isEqualTo("Math");
+		assertThat(question.getQuestion()).contains("2+2");
+	}
+
 	@Test
 	@DisplayName("Should Exist by question and subject")
-	void testThree() {
+	void testFive() {
 		boolean result	= questionRepository.existsByQuestionAndSubject("What is H2O?", "Science");
 		assertThat(result).isNotNull();
 		assertThat(result).isTrue();
